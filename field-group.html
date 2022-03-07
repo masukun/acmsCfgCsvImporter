@@ -16,45 +16,73 @@
 
         // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
         const CategoryNames = noEmptyTmps[0].split(',');
-        console.log(CategoryNames);
         //カンマごとに要素を区切って配列に格納
         noEmptyTmps.forEach((rowOfData, varse) => {
           csvDatas[varse] = rowOfData.split(',');
         })
         //カテゴリー名の要素を削除
         csvDatas.splice(0, 1);
-        console.log(csvDatas);
         //csvデータのオブジェクト生成
         const csvInfos = [];
         csvDatas.forEach((data, number) => {
           let csvGroup = {};
           CategoryNames.forEach((key, index) => {
+            //keyが同じ名前だと上書きしてしまう
             csvGroup[key] = csvDatas[number][index];
           })
           csvInfos.push(csvGroup);
-          console.log(csvInfos)
         })
+        console.log(csvInfos)
+        //テキストの場合
         csvInfos.forEach((csvElement,csvIndex) => {
           const contentArea = Array.from(document.getElementsByClassName("item-template"));
+          console.log(contentArea)
           //複製
-          const cloneElement = contentArea[csvIndex].cloneNode(true);
+          const cloneElement = contentArea[0].cloneNode(true);
           // 複製した要素の属性を編集
-          cloneElement.class = "";
+          cloneElement.removeAttribute("style");
+          if (csvIndex > 0){
+            cloneElement[csvIndex].classList.remove("item-template");
+          }
+
           //複製した要素の子孫要素編集
           const inputElement = cloneElement.querySelectorAll("input");
-          console.log(inputElement);
-          for (let i = 0)
-          // inputElement.forEach((input,form) => {
-          //   input.type = "text";
-          //   //ここ微妙
-          //   if (form !== inputElement.length - 1) {
-          //     input.name = csvElement.CategoryNames[form];
-          //   }else{
-          //     ;
-          //   }
-          // })
-           contentArea[csvIndex].after(cloneElement);
+          inputElement.forEach((input,form) => {
+            input.removeAttribute("disabled")
+            if (form !== inputElement.length - 1) {
+              input.value = csvElement[CategoryNames[form]];
+            }else{
+              ;
+            }
+          })
+          console.log(cloneElement)
+           contentArea[csvIndex].before(cloneElement);
         });
+
+
+
+        //ラジオボタンの場合
+        // CategoryNames.forEach((category,csvIndex) => {
+        //   const contentArea = Array.from(document.getElementsByClassName("item-template"));
+        //   //複製
+        //   const cloneElement = contentArea[0].cloneNode(true);
+        //   //複製した要素の属性を編集
+        //   cloneElement.style = "";
+        //   //複製した要素の子孫要素編集
+        //   const inputElement = cloneElement.querySelectorAll("input")
+        //   console.log(inputElement)
+        //   inputElement.forEach((input,form) => {
+        //     input.removeAttribute("disabled")
+
+        //     if (form !== inputElement.length - 1) {
+        //       input.type = "radio";
+        //       input.setAttribute("name",category)
+        //       input.setAttribute("value",csvInfos[form][category])
+        //     }
+        //   })
+        //   console.log(cloneElement)
+        //    contentArea[csvIndex].after(cloneElement);
+        // });
       });
       //指定されたファイルの内容を読み取り、完了後csvDatasプロパティにファイルの内容を文字列として格納
       fileReader.readAsText(e.target.files[0]);
@@ -62,14 +90,14 @@
   });
 </script>
 
-<h2 class="acms-admin-admin-title2">カスタムフィールドグループ サンプル</h2>
+<h2 class="acms-admin-admin-title2">サンプル</h2>
 <table class="js-fieldgroup-sortable adminTable acms-admin-table-admin-edit">
   <thead class="acms-admin-hide-sp">
     <tr>
       <th class="acms-admin-table-left acms-admin-admin-config-table-item-handle"> </th>
-      <th class="acms-admin-table-left">XXX(画像)</th>
-      <th class="acms-admin-table-left">YYY(日付)</th>
-      <th class="acms-admin-table-left">ZZZ(タイトル)</th>
+      <th class="acms-admin-table-left">動物</th>
+      <th class="acms-admin-table-left">食べ物</th>
+      <th class="acms-admin-table-left">色</th>
       <th class="acms-admin-table-left acms-admin-admin-config-table-action">削除</th>
     </tr>
   </thead>
@@ -80,13 +108,32 @@
         <i class="acms-admin-icon-sort"></i>
       </td>
       <td>
-        <input type="text" name="xxx[]" value="{xxx}" class="acms-admin-form-width-full" />
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
+          <label for="input-radio-animal-dog">
+            <i class="acms-admin-ico-radio"></i>dog</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
+          <label for="input-radio-animal-cat">
+            <i class="acms-admin-ico-radio"></i>cat</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
+          <label for="input-radio-animal-monkey">
+            <i class="acms-admin-ico-radio"></i>monkey</label>
+        </div>
       </td>
       <td>
-        <input type="text" name="yyy[]" value="{yyy}" class="acms-admin-form-width-full" />
+        <input type="text" name="food[]" value="{food}" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <input type="text" name="zzz[]" value="{zzz}" class="acms-admin-form-width-full" />
+        <select name="color[]" class="acms-admin-form-width-full">
+          <option value=""></option>
+          <option value="red" {color:selected#red}>red</option>
+          <option value="blue" {color:selected#blue}>blue</option>
+          <option value="green" {color:selected#green}>green</option>
+        </select>
       </td>
       <td class="acms-admin-table-nowrap">
         <input type="button" class="item-delete acms-admin-btn-admin acms-admin-btn-admin-danger" value="削除" />
@@ -98,23 +145,37 @@
         <i class="acms-admin-icon-sort"></i>
       </td>
       <td>
-        <input type="text" name="xxx[]" value="" class="acms-admin-form-width-full" />
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="dog" id="input-radio-animal-dog" />
+          <label for="input-radio-animal-dog">
+            <i class="acms-admin-ico-radio"></i>dog</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="cat" id="input-radio-animal-cat" />
+          <label for="input-radio-animal-cat">
+            <i class="acms-admin-ico-radio"></i>cat</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="animal[]" value="monkey" id="input-radio-animal-monkey" />
+          <label for="input-radio-animal-monkey">
+            <i class="acms-admin-ico-radio"></i>monkey</label>
+        </div>
       </td>
       <td>
-        <input type="text" name="yyy[]" value="" class="acms-admin-form-width-full" />
+        <input type="text" name="food[]" value="" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <input type="text" name="zzz[]" value="" class="acms-admin-form-width-full" />
+        <select name="color[]" class="acms-admin-form-width-full">
+          <option value=""></option>
+          <option value="red">red</option>
+          <option value="blue">blue</option>
+          <option value="green">green</option>
+        </select>
       </td>
       <td class="acms-admin-table-nowrap">
         <input type="button" class="item-delete acms-admin-btn-admin acms-admin-btn-admin-danger" value="削除" />
       </td>
     </tr>
-
-    <div class="container">
-      <div id="table" class="userTableBox">
-      </div>
-
   </tbody>
   <tfoot>
     <tr>
@@ -124,12 +185,12 @@
     </tr>
   </tfoot>
 </table>
-<input type="hidden" name="@sample[]" value="xxx" />
-<input type="hidden" name="field[]" value="xxx" />
-<input type="hidden" name="@sample[]" value="yyy" />
-<input type="hidden" name="field[]" value="yyy" />
-<input type="hidden" name="@sample[]" value="zzz" />
-<input type="hidden" name="field[]" value="zzz" />
+<input type="hidden" name="@sample[]" value="animal" />
+<input type="hidden" name="field[]" value="animal" />
+<input type="hidden" name="@sample[]" value="food" />
+<input type="hidden" name="field[]" value="food" />
+<input type="hidden" name="@sample[]" value="color" />
+<input type="hidden" name="field[]" value="color" />
 <input type="hidden" name="field[]" value="@sample" />
 
 <input type="file" class="item-insert" id="uploadFile">

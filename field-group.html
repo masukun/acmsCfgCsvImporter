@@ -34,29 +34,58 @@
         })
         console.log(csvInfos)
         //テキストの場合
-        csvInfos.forEach((csvElement,csvIndex) => {
+        csvInfos.forEach((csvElement, csvIndex) => {
           const contentArea = Array.from(document.getElementsByClassName("item-template"));
-          console.log(contentArea)
+          contentArea[0].classList.remove("item-template");
           //複製
           const cloneElement = contentArea[0].cloneNode(true);
+          contentArea[0].classList.add("item-template");
           // 複製した要素の属性を編集
           cloneElement.removeAttribute("style");
-          if (csvIndex > 0){
-            cloneElement[csvIndex].classList.remove("item-template");
-          }
-
           //複製した要素の子孫要素編集
           const inputElement = cloneElement.querySelectorAll("input");
-          inputElement.forEach((input,form) => {
-            input.removeAttribute("disabled")
+          inputElement.forEach((input, form) => {
+            input.removeAttribute("disabled");
             if (form !== inputElement.length - 1) {
-              input.value = csvElement[CategoryNames[form]];
-            }else{
+              if (input.type === "text") {
+                for (let i = 0; i < CategoryNames.length; i++) {
+                  if (input.name === CategoryNames[i]) {
+                    input.value = Object.values(csvElement)[i];
+                  }
+                }
+              } else if (input.type === "radio") {
+                for (let k = 0; k < CategoryNames.length; k++) {
+                  if (input.name === CategoryNames[k]) {
+                    input.name = CategoryNames[k] + csvIndex;
+                    if (input.value === Object.values(csvElement)[k]) {
+                      input.checked = true;
+                    }
+                  }
+                }
+              }
+            } else {
               ;
             }
           })
-          console.log(cloneElement)
-           contentArea[csvIndex].before(cloneElement);
+          const selectElement = cloneElement.querySelectorAll("select");
+          selectElement.forEach((select, selenumber) => {
+            select.removeAttribute("disabled");
+            for (let t = 0; t < CategoryNames.length; t++) {
+              if (select.name === CategoryNames[t]) {
+                select.name = CategoryNames[t] + csvIndex;
+                const optionElement = select.querySelectorAll("option");
+                optionElement.forEach((option, optiNumber) => {
+                  for (let e = 0; e < CategoryNames.length; e++) {
+                    if (option.value === Object.values(csvElement)[e]) {
+                      option.checked = true;
+                    }
+                  }
+                })
+              }
+            }
+          })
+          console.log(cloneElement);
+          contentArea[0].before(cloneElement);
         });
 
 
@@ -109,26 +138,26 @@
       </td>
       <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
+          <input type="radio" name="animal" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
           <label for="input-radio-animal-dog">
             <i class="acms-admin-ico-radio"></i>dog</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
+          <input type="radio" name="animal" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
           <label for="input-radio-animal-cat">
             <i class="acms-admin-ico-radio"></i>cat</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
+          <input type="radio" name="animal" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
           <label for="input-radio-animal-monkey">
             <i class="acms-admin-ico-radio"></i>monkey</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food[]" value="{food}" class="acms-admin-form-width-full" />
+        <input type="text" name="food" value="{food}" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <select name="color[]" class="acms-admin-form-width-full">
+        <select name="color" class="acms-admin-form-width-full">
           <option value=""></option>
           <option value="red" {color:selected#red}>red</option>
           <option value="blue" {color:selected#blue}>blue</option>
@@ -146,26 +175,26 @@
       </td>
       <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="dog" id="input-radio-animal-dog" />
+          <input type="radio" name="animal" value="dog" id="input-radio-animal-dog" />
           <label for="input-radio-animal-dog">
             <i class="acms-admin-ico-radio"></i>dog</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="cat" id="input-radio-animal-cat" />
+          <input type="radio" name="animal" value="cat" id="input-radio-animal-cat" />
           <label for="input-radio-animal-cat">
             <i class="acms-admin-ico-radio"></i>cat</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="monkey" id="input-radio-animal-monkey" />
+          <input type="radio" name="animal" value="monkey" id="input-radio-animal-monkey" />
           <label for="input-radio-animal-monkey">
             <i class="acms-admin-ico-radio"></i>monkey</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food[]" value="" class="acms-admin-form-width-full" />
+        <input type="text" name="food" value="" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <select name="color[]" class="acms-admin-form-width-full">
+        <select name="color" class="acms-admin-form-width-full">
           <option value=""></option>
           <option value="red">red</option>
           <option value="blue">blue</option>

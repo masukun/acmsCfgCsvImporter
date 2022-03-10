@@ -36,7 +36,23 @@
         //テキストの場合
         csvInfos.forEach((csvElement, csvIndex) => {
           const contentArea = Array.from(document.getElementsByClassName("item-template"));
+          const prevInput = contentArea[0].querySelectorAll("input");
+          const prevSelect = contentArea[0].querySelectorAll("select");
+          //inputタグのname属性をそろえる
+          for (let x = 0; x < prevInput.length; x++){
+            if (prevInput[x].hasAttribute("name")){
+              prevInput[x].name = prevInput[x].name.replace('[]','');
+            }
+          }
+          //selectタグのname属性をそろえる
+          for (let y = 0; y < prevSelect.length; y++){
+            if (prevSelect[y].hasAttribute("name")){
+              prevSelect[y].name = prevSelect[y].name.replace('[]','');
+            }
+          }
+          console.log(prevInput)
           contentArea[0].classList.remove("item-template");
+          console.log(contentArea[0])
           //複製
           const cloneElement = contentArea[0].cloneNode(true);
           contentArea[0].classList.add("item-template");
@@ -44,20 +60,17 @@
           cloneElement.removeAttribute("style");
           //複製した要素の子孫要素編集
           const inputElement = cloneElement.querySelectorAll("input");
+          const selectElement = cloneElement.querySelectorAll("select");
           inputElement.forEach((input, form) => {
             input.removeAttribute("disabled");
             if (form !== inputElement.length - 1) {
-              if (input.type === "text") {
-                for (let i = 0; i < CategoryNames.length; i++) {
-                  if (input.name === CategoryNames[i]) {
+              for (let i = 0; i < CategoryNames.length; i++) {
+                if (input.name === CategoryNames[i]) {
+                  input.name = CategoryNames[i] + "[" + csvIndex + 1  + "]";
+                  if (input.type === "text") {
                     input.value = Object.values(csvElement)[i];
-                  }
-                }
-              } else if (input.type === "radio") {
-                for (let k = 0; k < CategoryNames.length; k++) {
-                  if (input.name === CategoryNames[k]) {
-                    input.name = CategoryNames[k] + csvIndex;
-                    if (input.value === Object.values(csvElement)[k]) {
+                  } else if (input.type === "radio") {
+                    if (input.value === Object.values(csvElement)[i]) {
                       input.checked = true;
                     }
                   }
@@ -67,17 +80,16 @@
               ;
             }
           })
-          const selectElement = cloneElement.querySelectorAll("select");
           selectElement.forEach((select, selenumber) => {
             select.removeAttribute("disabled");
             for (let t = 0; t < CategoryNames.length; t++) {
               if (select.name === CategoryNames[t]) {
-                select.name = CategoryNames[t] + csvIndex;
+                select.name = CategoryNames[t] + "[" + csvIndex + "]";
                 const optionElement = select.querySelectorAll("option");
                 optionElement.forEach((option, optiNumber) => {
                   for (let e = 0; e < CategoryNames.length; e++) {
                     if (option.value === Object.values(csvElement)[e]) {
-                      option.checked = true;
+                      option.selected = true;
                     }
                   }
                 })
@@ -87,31 +99,6 @@
           console.log(cloneElement);
           contentArea[0].before(cloneElement);
         });
-
-
-
-        //ラジオボタンの場合
-        // CategoryNames.forEach((category,csvIndex) => {
-        //   const contentArea = Array.from(document.getElementsByClassName("item-template"));
-        //   //複製
-        //   const cloneElement = contentArea[0].cloneNode(true);
-        //   //複製した要素の属性を編集
-        //   cloneElement.style = "";
-        //   //複製した要素の子孫要素編集
-        //   const inputElement = cloneElement.querySelectorAll("input")
-        //   console.log(inputElement)
-        //   inputElement.forEach((input,form) => {
-        //     input.removeAttribute("disabled")
-
-        //     if (form !== inputElement.length - 1) {
-        //       input.type = "radio";
-        //       input.setAttribute("name",category)
-        //       input.setAttribute("value",csvInfos[form][category])
-        //     }
-        //   })
-        //   console.log(cloneElement)
-        //    contentArea[csvIndex].after(cloneElement);
-        // });
       });
       //指定されたファイルの内容を読み取り、完了後csvDatasプロパティにファイルの内容を文字列として格納
       fileReader.readAsText(e.target.files[0]);
@@ -138,26 +125,26 @@
       </td>
       <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
+          <input type="radio" name="animal[]" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
           <label for="input-radio-animal-dog">
             <i class="acms-admin-ico-radio"></i>dog</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
+          <input type="radio" name="animal[]" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
           <label for="input-radio-animal-cat">
             <i class="acms-admin-ico-radio"></i>cat</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
+          <input type="radio" name="animal[]" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
           <label for="input-radio-animal-monkey">
             <i class="acms-admin-ico-radio"></i>monkey</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food" value="{food}" class="acms-admin-form-width-full" />
+        <input type="text" name="food[]" value="{food}" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <select name="color" class="acms-admin-form-width-full">
+        <select name="color[]" class="acms-admin-form-width-full">
           <option value=""></option>
           <option value="red" {color:selected#red}>red</option>
           <option value="blue" {color:selected#blue}>blue</option>
@@ -175,26 +162,26 @@
       </td>
       <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="dog" id="input-radio-animal-dog" />
+          <input type="radio" name="animal[]" value="dog" id="input-radio-animal-dog" />
           <label for="input-radio-animal-dog">
             <i class="acms-admin-ico-radio"></i>dog</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="cat" id="input-radio-animal-cat" />
+          <input type="radio" name="animal[]" value="cat" id="input-radio-animal-cat" />
           <label for="input-radio-animal-cat">
             <i class="acms-admin-ico-radio"></i>cat</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal" value="monkey" id="input-radio-animal-monkey" />
+          <input type="radio" name="animal[]" value="monkey" id="input-radio-animal-monkey" />
           <label for="input-radio-animal-monkey">
             <i class="acms-admin-ico-radio"></i>monkey</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food" value="" class="acms-admin-form-width-full" />
+        <input type="text" name="food[]" value="" class="acms-admin-form-width-full" />
       </td>
       <td>
-        <select name="color" class="acms-admin-form-width-full">
+        <select name="color[]" class="acms-admin-form-width-full">
           <option value=""></option>
           <option value="red">red</option>
           <option value="blue">blue</option>

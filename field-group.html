@@ -76,12 +76,12 @@
               //type属性別編集
               if (input.name === category) {
                 input.name = category + "[" + prevTd.length + "]";
-              }
-              if (input.type === "text") {
-                input.value = Object.values(csvElement)[setNumber];
-              } else if (input.type === "radio" || input.type === "checkbox") {
-                if (input.value === Object.values(csvElement)[setNumber]) {
-                  input.checked = true;
+                if (input.type === "text") {
+                  input.value = Object.values(csvElement)[setNumber];
+                } else if (input.type === "radio" || input.type === "checkbox") {
+                  if (input.value === Object.values(csvElement)[setNumber]) {
+                    input.checked = true;
+                  }
                 }
               }
             })

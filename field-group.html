@@ -27,76 +27,88 @@
         csvDatas.forEach((data, number) => {
           let csvGroup = {};
           CategoryNames.forEach((key, index) => {
-            //keyが同じ名前だと上書きしてしまう
             csvGroup[key] = csvDatas[number][index];
           })
           csvInfos.push(csvGroup);
         })
-        console.log(csvInfos)
         //テキストの場合
         csvInfos.forEach((csvElement, csvIndex) => {
+          //元々あったフォームの数を知る
+          const prevTd = Array.from(document.getElementsByClassName("sortable-item"))
+          prevTd.pop();
           const contentArea = Array.from(document.getElementsByClassName("item-template"));
-          const prevInput = contentArea[0].querySelectorAll("input");
-          const prevSelect = contentArea[0].querySelectorAll("select");
-          //inputタグのname属性をそろえる
-          for (let x = 0; x < prevInput.length; x++){
-            if (prevInput[x].hasAttribute("name")){
-              prevInput[x].name = prevInput[x].name.replace('[]','');
+          const prevInput = Array.from(contentArea[0].querySelectorAll("input"));
+          const prevSelect = Array.from(contentArea[0].querySelectorAll("select"));
+          const prevTextArea = Array.from(contentArea[0].querySelectorAll("textarea"))
+          //inputタグのname属性にある[]を削除してname属性をそろえる
+          prevInput.forEach((input) => {
+            if (input.hasAttribute("name")) {
+              input.name = input.name.replace('[]', '');
             }
-          }
-          //selectタグのname属性をそろえる
-          for (let y = 0; y < prevSelect.length; y++){
-            if (prevSelect[y].hasAttribute("name")){
-              prevSelect[y].name = prevSelect[y].name.replace('[]','');
+          })
+          //selectタグのname属性にある[]を削除してname属性をそろえる
+          prevSelect.forEach((select) => {
+            if (select.hasAttribute("name")) {
+              select.name = select.name.replace('[]', '');
             }
-          }
-          console.log(prevInput)
+          })
+          //textareaタグのname属性にある[]を削除してname属性をそろえる
+          prevTextArea.forEach((textarea) => {
+            if (textarea.hasAttribute("name")) {
+              textarea.name = textarea.name.replace('[]', '');
+            }
+          })
+          //複製要素にitem-templateをつけないようにする
           contentArea[0].classList.remove("item-template");
-          console.log(contentArea[0])
           //複製
           const cloneElement = contentArea[0].cloneNode(true);
+          //item-templateを付け直して、複製できるようにする
           contentArea[0].classList.add("item-template");
           // 複製した要素の属性を編集
           cloneElement.removeAttribute("style");
           //複製した要素の子孫要素編集
           const inputElement = cloneElement.querySelectorAll("input");
           const selectElement = cloneElement.querySelectorAll("select");
-          inputElement.forEach((input, form) => {
-            input.removeAttribute("disabled");
-            if (form !== inputElement.length - 1) {
-              for (let i = 0; i < CategoryNames.length; i++) {
-                if (input.name === CategoryNames[i]) {
-                  input.name = CategoryNames[i] + "[" + csvIndex + 1  + "]";
-                  if (input.type === "text") {
-                    input.value = Object.values(csvElement)[i];
-                  } else if (input.type === "radio") {
-                    if (input.value === Object.values(csvElement)[i]) {
-                      input.checked = true;
-                    }
-                  }
+          const textareaElement = cloneElement.querySelectorAll("textarea");
+          CategoryNames.forEach((category, setNumber) => {
+            inputElement.forEach((input, form) => {
+              input.removeAttribute("disabled");
+              //type属性別編集
+              if (input.type === "text") {
+                if (input.name === category) {
+                  input.name = category + "[" + prevTd.length + "]";
+                  input.value = Object.values(csvElement)[setNumber];
+                }
+              } else if (input.type === "radio" || input.type === "checkbox") {
+                if (input.value === Object.values(csvElement)[setNumber]) {
+                  input.checked = true;
                 }
               }
-            } else {
-              ;
-            }
-          })
-          selectElement.forEach((select, selenumber) => {
-            select.removeAttribute("disabled");
-            for (let t = 0; t < CategoryNames.length; t++) {
-              if (select.name === CategoryNames[t]) {
-                select.name = CategoryNames[t] + "[" + csvIndex + "]";
-                const optionElement = select.querySelectorAll("option");
-                optionElement.forEach((option, optiNumber) => {
-                  for (let e = 0; e < CategoryNames.length; e++) {
-                    if (option.value === Object.values(csvElement)[e]) {
-                      option.selected = true;
-                    }
-                  }
-                })
+            })
+            //selectボックス
+            selectElement.forEach((select) => {
+              select.removeAttribute("disabled");
+              //name属性編集
+              if (select.name === category) {
+                select.name = category + "[" + prevTd.length + "]";
               }
-            }
+              //optionタグにselectedをつける編集
+              const optionElement = select.querySelectorAll("option");
+              optionElement.forEach((option, optiNumber) => {
+                if (option.value === Object.values(csvElement)[setNumber]) {
+                  option.selected = true;
+                }
+              })
+            })
+            //テキストエリア
+            textareaElement.forEach((textarea) => {
+              textarea.removeAttribute("disabled");
+              if (textarea.name === category) {
+                textarea.name = category + "[" + prevTd.length + "]";
+                textarea.value = Object.values(csvElement)[setNumber]
+              }
+            })
           })
-          console.log(cloneElement);
           contentArea[0].before(cloneElement);
         });
       });
@@ -111,9 +123,11 @@
   <thead class="acms-admin-hide-sp">
     <tr>
       <th class="acms-admin-table-left acms-admin-admin-config-table-item-handle"> </th>
-      <th class="acms-admin-table-left">動物</th>
-      <th class="acms-admin-table-left">食べ物</th>
-      <th class="acms-admin-table-left">色</th>
+      <th class="acms-admin-table-left">都道府県</th>
+      <th class="acms-admin-table-left">ランチセット</th>
+      <th class="acms-admin-table-left">デザート</th>
+      <th class="acms-admin-table-left">ホテル</th>
+      <th class="acms-admin-table-left">その他</th>
       <th class="acms-admin-table-left acms-admin-admin-config-table-action">削除</th>
     </tr>
   </thead>
@@ -124,32 +138,50 @@
         <i class="acms-admin-icon-sort"></i>
       </td>
       <td>
+        <input type="text" name="prefectures[]" value="{prefectures}" class="acms-admin-form-width-full" />
+      </td>
+      <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="dog" {animal:checked#dog} id="input-radio-animal-dog" />
-          <label for="input-radio-animal-dog">
-            <i class="acms-admin-ico-radio"></i>dog</label>
+          <input type="radio" name="lanchSet[]" value="sukiyaki" {lanchSet:checked#sukiyaki}
+            id="input-radio-lanchSet-sukiyaki" />
+          <label for="input-radio-lanchSet-sukiyaki">
+            <i class="acms-admin-ico-radio"></i>すき焼き</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="cat" {animal:checked#cat} id="input-radio-animal-cat" />
-          <label for="input-radio-animal-cat">
-            <i class="acms-admin-ico-radio"></i>cat</label>
+          <input type="radio" name="lanchSet[]" value="shabushabu" {lanchSet:checked#shabushabu}
+            id="input-radio-lanchSet-shabushabu" />
+          <label for="input-radio-lanchSet-shabushabu">
+            <i class="acms-admin-ico-radio"></i>しゃぶしゃぶ</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="monkey" {animal:checked#monkey} id="input-radio-animal-monkey" />
-          <label for="input-radio-animal-monkey">
-            <i class="acms-admin-ico-radio"></i>monkey</label>
+          <input type="radio" name="lanchSet[]" value="susi" {lanchSet:checked#susi} id="input-radio-lanchSet-susi" />
+          <label for="input-radio-lanchSet-susi">
+            <i class="acms-admin-ico-radio"></i>お寿司</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="lanchSet[]" value="unagi" {lanchSet:checked#unagi}
+            id="input-radio-lanchSet-unagi" />
+          <label for="input-radio-lanchSet-unagi">
+            <i class="acms-admin-ico-radio"></i>うなぎ丼</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food[]" value="{food}" class="acms-admin-form-width-full" />
+        <div class="acms-admin-form-checkbox">
+          <input type="checkbox" name="desset[]" value="need" {lanchSet:checked#need} id="input-checkbox-desset-need" />
+          <label for="input-checkbox-desset-need">
+            <i class="acms-admin-ico-checkbox"></i>デザート</label>
+        </div>
       </td>
       <td>
-        <select name="color[]" class="acms-admin-form-width-full">
+        <select name="hotel[]" class="acms-admin-form-width-full">
           <option value=""></option>
-          <option value="red" {color:selected#red}>red</option>
-          <option value="blue" {color:selected#blue}>blue</option>
-          <option value="green" {color:selected#green}>green</option>
+          <option value="kapuseruHotel" {hotel:selected#kapuseruHotel}>カプセルホテル</option>
+          <option value="resortHotel" {hotel:selected#resortHotel}>リゾートホテル</option>
+          <option value="businessHotel" {hotel:selected#businessHotel}>ビジネスホテル</option>
         </select>
+      </td>
+      <td>
+        <textarea name="option[]" class="acms-admin-form-width-full">{option}</textarea>
       </td>
       <td class="acms-admin-table-nowrap">
         <input type="button" class="item-delete acms-admin-btn-admin acms-admin-btn-admin-danger" value="削除" />
@@ -161,32 +193,47 @@
         <i class="acms-admin-icon-sort"></i>
       </td>
       <td>
+        <input type="text" name="prefectures[]" value="" class="acms-admin-form-width-full" />
+      </td>
+      <td>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="dog" id="input-radio-animal-dog" />
-          <label for="input-radio-animal-dog">
-            <i class="acms-admin-ico-radio"></i>dog</label>
+          <input type="radio" name="lanchSet[]" value="sukiyaki" id="input-radio-lanchSet-sukiyaki" />
+          <label for="input-radio-lanchSet-sukiyaki">
+            <i class="acms-admin-ico-radio"></i>すき焼き</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="cat" id="input-radio-animal-cat" />
-          <label for="input-radio-animal-cat">
-            <i class="acms-admin-ico-radio"></i>cat</label>
+          <input type="radio" name="lanchSet[]" value="shabushabu" id="input-radio-lanchSet-shabushabu" />
+          <label for="input-radio-lanchSet-shabushabu">
+            <i class="acms-admin-ico-radio"></i>しゃぶしゃぶ</label>
         </div>
         <div class="acms-admin-form-radio">
-          <input type="radio" name="animal[]" value="monkey" id="input-radio-animal-monkey" />
-          <label for="input-radio-animal-monkey">
-            <i class="acms-admin-ico-radio"></i>monkey</label>
+          <input type="radio" name="lanchSet[]" value="susi" id="input-radio-lanchSet-susi" />
+          <label for="input-radio-lanchSet-susi">
+            <i class="acms-admin-ico-radio"></i>お寿司</label>
+        </div>
+        <div class="acms-admin-form-radio">
+          <input type="radio" name="lanchSet[]" value="unagi" id="input-radio-lanchSet-unagi" />
+          <label for="input-radio-lanchSet-unagi">
+            <i class="acms-admin-ico-radio"></i>うなぎ丼</label>
         </div>
       </td>
       <td>
-        <input type="text" name="food[]" value="" class="acms-admin-form-width-full" />
+        <div class="acms-admin-form-checkbox">
+          <input type="checkbox" name="desset[]" id="input-checkbox-desset-need" />
+          <label for="input-checkbox-desset-need">
+            <i class="acms-admin-ico-checkbox"></i>デザート</label>
+        </div>
       </td>
       <td>
-        <select name="color[]" class="acms-admin-form-width-full">
+        <select name="hotel[]" class="acms-admin-form-width-full">
           <option value=""></option>
-          <option value="red">red</option>
-          <option value="blue">blue</option>
-          <option value="green">green</option>
+          <option value="kapuseruHotel">カプセルホテル</option>
+          <option value="resortHotel">リゾートホテル</option>
+          <option value="businessHotel">ビジネスホテル</option>
         </select>
+      </td>
+      <td>
+        <textarea name="option[]" class="acms-admin-form-width-full"></textarea>
       </td>
       <td class="acms-admin-table-nowrap">
         <input type="button" class="item-delete acms-admin-btn-admin acms-admin-btn-admin-danger" value="削除" />
@@ -195,18 +242,22 @@
   </tbody>
   <tfoot>
     <tr>
-      <td colSpan="5">
+      <td colSpan="6">
         <input type="button" class="item-insert acms-admin-btn-admin" value="追加" />
       </td>
     </tr>
   </tfoot>
 </table>
-<input type="hidden" name="@sample[]" value="animal" />
-<input type="hidden" name="field[]" value="animal" />
-<input type="hidden" name="@sample[]" value="food" />
-<input type="hidden" name="field[]" value="food" />
-<input type="hidden" name="@sample[]" value="color" />
-<input type="hidden" name="field[]" value="color" />
+<input type="hidden" name="@sample[]" value="prefectures" />
+<input type="hidden" name="field[]" value="prefectures" />
+<input type="hidden" name="@sample[]" value="lanchSet" />
+<input type="hidden" name="field[]" value="lanchSet" />
+<input type="hidden" name="@sample[]" value="hotel" />
+<input type="hidden" name="field[]" value="hotel" />
+<input type="hidden" name="@sample[]" value="option" />
+<input type="hidden" name="field[]" value="option" />
+<input type="hidden" name="@sample[]" value="desset" />
+<input type="hidden" name="field[]" value="desset" />
 <input type="hidden" name="field[]" value="@sample" />
 
 <input type="file" class="item-insert" id="uploadFile">

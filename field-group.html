@@ -5,59 +5,49 @@
     document.getElementById("uploadFile").addEventListener('change', function (e) {
       //ファイルを選択したときのファイル情報のオブジェクト
       let fileReader = new FileReader();
-
+      const fileName = document.getElementById("uploadFile").value.split(".").pop();
+      if (fileName !== "csv") {
+        window.alert("The format of the selected file is incorrect");
+      }
       // ファイルの読み込みを行ったら実行
       fileReader.addEventListener('load', function (e) {
-        const csvDatas = []; // 最終的な二次元配列を入れるための配列
-        const tmps = e.target.result.split(/\r\n|\n/); // 改行を区切り文字として行を要素とした配列を生成
-        const noEmptyTmps = tmps.filter(function (s) { // 空要素削除
+        const fileDatas = e.target.result.split(/\r\n|\n/); // 改行を区切り文字として行を要素とした配列を生成
+        console.log("a")
+        const noEmptyFileDatas = fileDatas.filter(function (s) { // 空要素削除
           return s !== '';
         });
 
         // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
-        const CategoryNames = noEmptyTmps[0].split(',');
+        const keys = noEmptyFileDatas[0].split(',');
         //カンマごとに要素を区切って配列に格納
-        noEmptyTmps.forEach((rowOfData, varse) => {
-          csvDatas[varse] = rowOfData.split(',');
-        })
-        //カテゴリー名の要素を削除
+        const csvDatas = noEmptyFileDatas.map(rowOfFileData => rowOfFileData.split(','));
+        //カテゴリー名の行要素を削除
         csvDatas.splice(0, 1);
         //csvデータのオブジェクト生成
         const csvInfos = [];
-        csvDatas.forEach((data, number) => {
+        csvDatas.forEach((data, csvNumber) => {
           let csvGroup = {};
-          CategoryNames.forEach((key, index) => {
-            csvGroup[key] = csvDatas[number][index];
+          keys.forEach((key, index) => {
+            csvGroup[key] = csvDatas[csvNumber][index];
           })
           csvInfos.push(csvGroup);
         })
+        console.log(csvInfos)
         //テキストの場合
         csvInfos.forEach((csvElement, csvIndex) => {
           //元々あったフォームの数を知る
           const prevTd = Array.from(document.getElementsByClassName("sortable-item"))
           prevTd.pop();
           const contentArea = Array.from(document.getElementsByClassName("item-template"));
-          const prevInput = Array.from(contentArea[0].querySelectorAll("input"));
-          const prevSelect = Array.from(contentArea[0].querySelectorAll("select"));
-          const prevTextArea = Array.from(contentArea[0].querySelectorAll("textarea"))
+          const prevForm = Array.from(contentArea[0].querySelectorAll("input,select,textarea"));
           //inputタグのname属性にある[]を削除してname属性をそろえる
-          prevInput.forEach((input) => {
-            if (input.hasAttribute("name")) {
-              input.name = input.name.replace('[]', '');
+          prevForm.forEach((form) => {
+            if (form.hasAttribute("name")) {
+              form.name = form.name.replace('[]', '');
             }
           })
-          //selectタグのname属性にある[]を削除してname属性をそろえる
-          prevSelect.forEach((select) => {
-            if (select.hasAttribute("name")) {
-              select.name = select.name.replace('[]', '');
-            }
-          })
-          //textareaタグのname属性にある[]を削除してname属性をそろえる
-          prevTextArea.forEach((textarea) => {
-            if (textarea.hasAttribute("name")) {
-              textarea.name = textarea.name.replace('[]', '');
-            }
-          })
+
+          //doSomething(perseCSV(e.target.result))
           //複製要素にitem-templateをつけないようにする
           contentArea[0].classList.remove("item-template");
           //複製
@@ -67,45 +57,32 @@
           // 複製した要素の属性を編集
           cloneElement.removeAttribute("style");
           //複製した要素の子孫要素編集
-          const inputElement = cloneElement.querySelectorAll("input");
-          const selectElement = cloneElement.querySelectorAll("select");
-          const textareaElement = cloneElement.querySelectorAll("textarea");
-          CategoryNames.forEach((category, setNumber) => {
-            inputElement.forEach((input, form) => {
-              input.removeAttribute("disabled");
-              //type属性別編集
-              if (input.name === category) {
-                input.name = category + "[" + prevTd.length + "]";
-                if (input.type === "text") {
-                  input.value = Object.values(csvElement)[setNumber];
-                } else if (input.type === "radio" || input.type === "checkbox") {
-                  if (input.value === Object.values(csvElement)[setNumber]) {
-                    input.checked = true;
+          const formElement = Array.from(cloneElement.querySelectorAll("input,select,textarea"));
+          keys.forEach((key, index) => {
+            formElement.forEach((form) => {
+              form.removeAttribute("disabled");
+              //
+              if (form.name === key) {
+                form.name = key + "[" + prevTd.length + "]";
+                if (form.nodeName === "INPUT") {
+                  if (form.type === "text") {
+                    form.value = Object.values(csvElement)[index];
+                  } else if (form.type === "radio" || form.type === "checkbox") {
+                    if (form.value === Object.values(csvElement)[index]) {
+                      form.checked = true;
+                    }
                   }
+                } else if (form.nodeName === "SELECT") {
+                  //optionタグにselectedをつける編集
+                  const optionElement = form.querySelectorAll("option");
+                  optionElement.forEach((option) => {
+                    if (option.value === Object.values(csvElement)[index]) {
+                      option.selected = true;
+                    }
+                  })
+                } else if (form.nodeName === "TEXTAREA") {
+                  form.value = Object.values(csvElement)[index];
                 }
-              }
-            })
-            //selectボックス
-            selectElement.forEach((select) => {
-              select.removeAttribute("disabled");
-              //name属性編集
-              if (select.name === category) {
-                select.name = category + "[" + prevTd.length + "]";
-              }
-              //optionタグにselectedをつける編集
-              const optionElement = select.querySelectorAll("option");
-              optionElement.forEach((option, optiNumber) => {
-                if (option.value === Object.values(csvElement)[setNumber]) {
-                  option.selected = true;
-                }
-              })
-            })
-            //テキストエリア
-            textareaElement.forEach((textarea) => {
-              textarea.removeAttribute("disabled");
-              if (textarea.name === category) {
-                textarea.name = category + "[" + prevTd.length + "]";
-                textarea.value = Object.values(csvElement)[setNumber]
               }
             })
           })
@@ -116,6 +93,7 @@
       fileReader.readAsText(e.target.files[0]);
     });
   });
+  ACMS.Dispatch.fieldgroupSortable(".js-fieldgroup-sortable");
 </script>
 
 <h2 class="acms-admin-admin-title2">サンプル</h2>

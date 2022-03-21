@@ -8,37 +8,49 @@
       const fileName = document.getElementById("uploadFile").value.split(".").pop();
       if (fileName !== "csv") {
         window.alert("The format of the selected file is incorrect");
+        return;
       }
       // ファイルの読み込みを行ったら実行
       fileReader.addEventListener('load', function (e) {
-        const fileDatas = e.target.result.split(/\r\n|\n/); // 改行を区切り文字として行を要素とした配列を生成
-        console.log("a")
-        const noEmptyFileDatas = fileDatas.filter(function (s) { // 空要素削除
-          return s !== '';
-        });
-
-        // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+        function arrayCSV() {
+          const fileDatas = e.target.result.split(/\r\n|\n/); // 改行を区切り文字として行を要素とした配列を生成
+          const noEmptyFileDatas = fileDatas.filter(function (s) { // 空要素削除
+            return s !== '';
+          });
+          return noEmptyFileDatas;
+        }
+        // arrayCSV関数の返り値を代入
+        const noEmptyFileDatas = arrayCSV();
+        // オブジェクトのkey要素該当箇所を取得
         const keys = noEmptyFileDatas[0].split(',');
-        //カンマごとに要素を区切って配列に格納
-        const csvDatas = noEmptyFileDatas.map(rowOfFileData => rowOfFileData.split(','));
-        //カテゴリー名の行要素を削除
-        csvDatas.splice(0, 1);
-        //csvデータのオブジェクト生成
-        const csvInfos = [];
-        csvDatas.forEach((data, csvNumber) => {
-          let csvGroup = {};
-          keys.forEach((key, index) => {
-            csvGroup[key] = csvDatas[csvNumber][index];
+        function objectCSV() {
+          //カンマごとに要素を区切って配列に格納
+          const csvDatas = noEmptyFileDatas.map(rowOfFileData => rowOfFileData.split(','));
+          //オブジェクトのkey要素該当箇所を削除
+          csvDatas.splice(0, 1);
+          //csvデータのオブジェクト生成
+          const csvInfos = [];
+          csvDatas.forEach((data, csvNumber) => {
+            let csvGroup = {};
+            keys.forEach((key, index) => {
+              csvGroup[key] = csvDatas[csvNumber][index];
+            })
+            csvInfos.push(csvGroup);
           })
-          csvInfos.push(csvGroup);
-        })
-        console.log(csvInfos)
-        //テキストの場合
+          return csvInfos;
+        }
+        // objectCSV関数の返り値を代入
+        const csvInfos = objectCSV();
+        function deleteClass() {
+          const targetClassName = Array.from(document.getElementsByClassName("editing"));
+          targetClassName[0].classList.remove("editing");
+        }
+        deleteClass();
+        const contentArea = Array.from(document.getElementsByClassName("item-template"));
         csvInfos.forEach((csvElement, csvIndex) => {
           //元々あったフォームの数を知る
           const prevTd = Array.from(document.getElementsByClassName("sortable-item"))
           prevTd.pop();
-          const contentArea = Array.from(document.getElementsByClassName("item-template"));
           const prevForm = Array.from(contentArea[0].querySelectorAll("input,select,textarea"));
           //inputタグのname属性にある[]を削除してname属性をそろえる
           prevForm.forEach((form) => {
@@ -46,16 +58,19 @@
               form.name = form.name.replace('[]', '');
             }
           })
-
-          //doSomething(perseCSV(e.target.result))
-          //複製要素にitem-templateをつけないようにする
-          contentArea[0].classList.remove("item-template");
-          //複製
-          const cloneElement = contentArea[0].cloneNode(true);
-          //item-templateを付け直して、複製できるようにする
-          contentArea[0].classList.add("item-template");
-          // 複製した要素の属性を編集
-          cloneElement.removeAttribute("style");
+          function CopySourceOperation() {
+            //複製要素にitem-templateをつけないようにする
+            contentArea[0].classList.remove("item-template");
+            //複製
+            const cloneElement = contentArea[0].cloneNode(true);
+            //item-templateを付け直して、複製できるようにする
+            contentArea[0].classList.add("item-template");
+            // 複製した要素の属性を編集
+            cloneElement.removeAttribute("style");
+            return cloneElement;
+          }
+          // CopySourceOperation関数の返り値を代入
+          const cloneElement = CopySourceOperation();
           //複製した要素の子孫要素編集
           const formElement = Array.from(cloneElement.querySelectorAll("input,select,textarea"));
           keys.forEach((key, index) => {
@@ -68,6 +83,7 @@
                   if (form.type === "text") {
                     form.value = Object.values(csvElement)[index];
                   } else if (form.type === "radio" || form.type === "checkbox") {
+                    console.log(form.value)
                     if (form.value === Object.values(csvElement)[index]) {
                       form.checked = true;
                     }
@@ -88,12 +104,12 @@
           })
           contentArea[0].before(cloneElement);
         });
+        ACMS.Dispatch.fieldgroupSortable(".js-fieldgroup-sortable");
       });
       //指定されたファイルの内容を読み取り、完了後csvDatasプロパティにファイルの内容を文字列として格納
       fileReader.readAsText(e.target.files[0]);
     });
   });
-  ACMS.Dispatch.fieldgroupSortable(".js-fieldgroup-sortable");
 </script>
 
 <h2 class="acms-admin-admin-title2">サンプル</h2>
@@ -145,8 +161,8 @@
       </td>
       <td>
         <div class="acms-admin-form-checkbox">
-          <input type="checkbox" name="desset[]" value="need" {lanchSet:checked#need} id="input-checkbox-desset-need" />
-          <label for="input-checkbox-desset-need">
+          <input type="checkbox" name="desset[]" value="on" {desset:checked#on} id="input-checkbox-desset-on" />
+          <label for="input-checkbox-desset-on">
             <i class="acms-admin-ico-checkbox"></i>デザート</label>
         </div>
       </td>
@@ -197,8 +213,8 @@
       </td>
       <td>
         <div class="acms-admin-form-checkbox">
-          <input type="checkbox" name="desset[]" id="input-checkbox-desset-need" />
-          <label for="input-checkbox-desset-need">
+          <input type="checkbox" name="desset[]" value="on" id="input-checkbox-desset-on" />
+          <label for="input-checkbox-desset-on">
             <i class="acms-admin-ico-checkbox"></i>デザート</label>
         </div>
       </td>

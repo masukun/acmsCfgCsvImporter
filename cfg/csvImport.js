@@ -1,28 +1,33 @@
 window.addEventListener('DOMContentLoaded', function () {
   //ファイル選択ボタンを追加
-  const addBtn = document.getElementsByClassName("item-insert")[0]
-  const parentTd = addBtn.parentElement;
-  const label = document.createElement("label");
-  //input type=fileタグ編集
-  const input = document.createElement("input");
-  input.setAttribute("type","file");
-  input.setAttribute("name","cfgCsv");
-  input.setAttribute("id","uploadFile");
-  //inputタグにつけるlabel編集
-  label.appendChild(input);
-  label.setAttribute("class","csvUpload");
-  label.innerHTML += "csvアップロード";
-  parentTd.insertBefore(label,addBtn.nextSibling);
+  function CsvButtonAdded() {
+    const refBtn = document.getElementsByClassName("item-insert")[0];
+    const parentTd = refBtn.parentElement;
+    const label = document.createElement("label");
+    //input type=fileタグ編集
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("name", "cfgCsv");
+    input.setAttribute("id", "uploadFile");
+    //inputタグにつけるlabel編集
+    label.appendChild(input);
+    label.setAttribute("class", "csvUpload");
+    label.innerHTML += "CSVアップロード";
+    parentTd.insertBefore(label, refBtn.nextSibling);
+  }
+  CsvButtonAdded();
   // ファイルが選択されたら実行
   document.getElementById("uploadFile").addEventListener('change', function (e) {
+
     //ファイルを選択したときのファイル情報のオブジェクト
     const fileReader = new FileReader();
     const file = document.getElementById("uploadFile").files[0];
     const fileExtension = document.getElementById("uploadFile").value.split(".").pop();
     if (fileExtension !== "csv") {
-      window.alert("The format of the selected file is incorrect");
+      window.alert("選択されたファイルの形式が間違っています");
       return;
     }
+
     // ファイルの読み込みを行ったら実行
     fileReader.addEventListener('load', function (e) {
       //csvデータの中身を整えて配列にする関数
@@ -60,7 +65,7 @@ window.addEventListener('DOMContentLoaded', function () {
       }
       // objectCSV関数の返り値を代入
       const csvInfos = objectCSV();
-      const result = window.confirm(`Do you want to read ${csvInfos.length} data of the selected ${file.name}?`)
+      const result = window.confirm(`選択した${file.name}のデータ${csvInfos.length}件を読み込みますか？`);
       //ファイル選択をクリア
       document.getElementById("uploadFile").value = "";
       if (result === false) {
